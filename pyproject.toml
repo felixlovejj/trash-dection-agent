@@ -1,0 +1,33 @@
+[project]
+name = "TrashDetectionAgent"
+version = "1.0.0"
+description = "基于 MCP 架构的 AI 垃圾分类与价格查询智能体"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    # ── MCP 框架（Server + Client SSE） ──
+    "art>=6.5",
+    "black>=25.9.0",
+    "colorlog>=6.10.1",
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.14.0",
+    "pyyaml>=6.0.2",
+    "ruff>=0.14.4",
+    # ── YOLO 目标检测 ──
+    "ultralytics>=8.0.0",
+    "opencv-python>=4.8.0",
+    # ── 网络爬虫 ──
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    # ── 数据处理 ──
+    "pandas>=2.0.0",
+    # ── 通义千问 LLM ──
+    "dashscope>=1.14.0",
+    "openai>=1.0.0",
+    # ── 百度语音 ──
+    "baidu-aip>=4.16.0",
+    "chardet>=5.0.0",
+    # ── Web UI（MCP Client 界面） ──
+    "streamlit>=1.28.0",
+    "audio-recorder-streamlit>=0.0.8",
+]

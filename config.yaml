@@ -1,0 +1,64 @@
+server: # 服务器元数据
+  name: TrashDetectionAgent
+  name_zh: 垃圾分类智能体 MCP Server
+  author: 垃圾分类项目组
+  description: AI-powered trash detection and sorting agent based on MCP architecture.
+  description_zh: 基于 MCP 架构的 AI 垃圾分类与价格查询智能体，使用 YOLO11+YOLOv8 双模型检测。
+  version: 1.0.0
+
+transport: # 服务器启动方式配置
+  type: "sse" # 可选值: stdio, sse
+  host: "127.0.0.1" # 仅在 type 为 sse 时有效
+  port: 12345
+
+logging: # 日志配置
+  console:
+    enabled: true
+    level: "INFO"
+  file:
+    enabled: true
+    level: "INFO"
+    path: "logs/%Y-%m-%d_%H-%M-%S.log"
+    rotation: "10 MB"
+    retention: "7 days"
+    compression: "zip"
+
+# ═══════════════════════════════════════════════════════════
+#  以下为业务配置（仅元数据，密钥由 SOPS/env.yaml 管理）
+# ═══════════════════════════════════════════════════════════
+
+models: # YOLO 模型配置
+  primary_weight: "best_trash_detector.pt"   # YOLO11 主模型权重（5大类）
+  secondary_weight: "best_yolov8_trash.pt"   # YOLOv8 辅助模型权重（18细类）
+  confidence_threshold: 0.25
+
+llm: # 通义千问 LLM 配置
+  model_name: "qwen-turbo"
+  base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+  intent_max_tokens: 10
+  chat_max_tokens: 1500
+  report_max_tokens: 1000
+
+voice: # 语音交互配置
+  stt_sample_rate: 16000
+  stt_dev_pid: 1537
+  tts_per: 4
+  tts_spd: 5
+  tts_vol: 9
+  tts_dashscope_model: "cosyvoice-v1"
+  tts_dashscope_voice: "longxiaochun"
+
+crawler: # 价格爬虫配置
+  source_url: "https://baojia.huishoushang.com/material/list"
+  request_timeout: 30
+  max_retries: 3
+
+# ═══════════════════════════════════════════════════════════
+#  密钥由 SOPS + env.yaml 加密管理（见 README.md）
+#  如需本地开发调试，可取消注释并填入密钥
+# ═══════════════════════════════════════════════════════════
+# secrets:
+#   dashscope_api_key: ""
+#   baidu_app_id: ""
+#   baidu_api_key: ""
+#   baidu_secret_key: ""

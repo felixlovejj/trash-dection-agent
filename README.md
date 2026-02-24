@@ -4,11 +4,11 @@
 
 ### 组员信息
 
-| 姓名 | 学号 | 分工 | 备注 |
-| :--: | :--: | :--: | :--: |
-| 娄卫健 | U202414787 | YOLO 模型训练及检测、MCP 服务、LLM 集成 |
-| （请填写） |  | 价格爬虫、语音交互、MCP服务 |
-| （请填写） | （请填写） | 前端 UI、报告生成、MCP服务 |
+| 姓名 | 学号 | 分工 |
+| :--: | :--: | :--: |
+| 娄卫健 | U202414787 | YOLO 模型训练及检测、LLM 集成、任务分配、MCP 服务 |
+| 张哲 | U202414647 | 价格爬虫、语音识别tool、语音合成tool、重构、MCP服务 |
+| 韩先涛 | U202414626 | 前端 UI、报告生成tool、调试程序、技术文档、MCP服务 |
 
 ### Tool 列表
 
@@ -89,37 +89,110 @@ TrashDetectionAgent/
 
 ### 快速开始
 
+#### 0. 环境要求
+
+在开始之前，请确保已安装以下工具（详见 `docs/prerequisites/` 目录下的教程文档）：
+
+| 工具 | 最低版本 | 用途 | 安装参考 |
+| :--: | :------: | :--: | :------: |
+| Python | ≥ 3.10 | 运行环境 | [python.org](https://www.python.org/downloads/) |
+| uv | 最新版 | Python 包与环境管理 | `docs/prerequisites/uv.mdx` |
+| Node.js | LTS | 运行 MCP Inspector 调试工具 | `docs/prerequisites/node.js.mdx` |
+| Git | 最新版 | 代码版本管理 | `docs/prerequisites/git.mdx` |
+| SOPS + Age | 最新版 | 密钥加密管理（可选） | `docs/prerequisites/sops.mdx` |
+
+#### 1. 克隆项目
+
 ```bash
-# 1. 安装 uv 包管理器（如未安装）
-pip install uv
-
-# 2. 创建虚拟环境并安装依赖
-uv sync
-
-# 3. 放置 YOLO 模型权重
-#    确保 best_trash_detector.pt 和 best_yolov8_trash.pt 在项目根目录
-
-# 4. 启动 MCP Server（SSE 模式）
-uv run server.py
-# 服务将在 http://127.0.0.1:12345 启动
-
-# 5. 使用 MCP Inspector 调试
-npx @modelcontextprotocol/inspector
-# 请使用SSE 模式: url = http://127.0.0.1:12345/sse
+git clone --recursive https://github.com/felixlovejj/trash-dection-agent.git
+cd YA_MCPServer_Template
 ```
+
+> **提示**：`--recursive` 会同时拉取 `modules/YA_Common` 和 `modules/YA_Secrets` 子模块。
+
+#### 2. 安装 uv 包管理器（如未安装）
+
+**Windows (PowerShell)：**
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+或使用pip：
+
+pip install uv
+```
+
+**macOS / Linux：**
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+安装完成后验证：
+
+```bash
+uv --version
+```
+
+#### 3. 创建虚拟环境并安装依赖
+
+```bash
+uv sync
+```
+
+> `uv sync` 会根据 `pyproject.toml` 和 `uv.lock` 自动创建 `.venv` 虚拟环境并安装全部依赖。
+>
+> 
+
+#### 4. 放置 YOLO 模型权重
+
+确保以下两个权重文件已放置在**项目根目录**下：
+
+- `best_trash_detector.pt` — YOLO11 主模型（5 大类检测）
+- `best_yolov8_trash.pt` — YOLOv8 辅助模型（18 细分类检测）
+
+> 启动时 `setup.py` 会自动检测权重文件是否存在并给出提示。
+
+#### 5. 启动 MCP Server（SSE 模式）
+
+```bash
+uv run server.py
+```
+
+启动成功后，服务将运行在 `http://127.0.0.1:12345`（可在 `config.yaml` 的 `transport` 部分修改主机和端口）。
+
+#### 6. 使用 MCP Inspector 调试（新终端）
+
+打开一个**新的终端窗口**，运行：
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+在 MCP Inspector 界面中选择 **SSE** 模式，输入连接地址：
+
+```
+http://127.0.0.1:12345/sse
+```
+
+即可在线调试所有 Tool、Resource 和 Prompt。
+
+#### 7. 启动 Streamlit UI 界面（新终端）
+
+打开一个**新的终端窗口**，运行：
+
+```bash
+uv run streamlit run ui/chat_voice_llm_agent.py
+```
+
+Streamlit 将自动在浏览器中打开聊天界面（默认地址 `http://localhost:8501`），支持：
+- 文字对话（意图识别 → 垃圾检测 → 价格查询）
+- 语音输入 / 语音播报
+- 图片上传检测
+- 检测报告生成与 CSV 导出
 
 ### 其他需要说明的情况
 
-#### SOPS 密钥说明
-
-在 `env.yaml` 中通过 SOPS (Age 加密) 管理以下密钥：
-
-| 变量名 | 用途 |
-| :----: | :---: |
-| `dashscope_api_key` | 通义千问 LLM API Key（DashScope），用于意图识别、智能推理、对话生成 |
-| `baidu_app_id` | 百度智能云 App ID，用于语音识别和语音合成 |
-| `baidu_api_key` | 百度智能云 API Key，与 App ID 配合使用 |
-| `baidu_secret_key` | 百度智能云 Secret Key，与 API Key 配合使用 |
 
 
 #### 深度学习框架与模型

@@ -9,7 +9,7 @@ server: # 服务器元数据
 transport: # 服务器启动方式配置
   type: "sse" # 可选值: stdio, sse
   host: "127.0.0.1" # 仅在 type 为 sse 时有效
-  port: 12345
+  port: 12346
 
 logging: # 日志配置
   console:

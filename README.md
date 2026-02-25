@@ -172,7 +172,7 @@ npx @modelcontextprotocol/inspector
 在 MCP Inspector 界面中选择 **SSE** 模式，输入连接地址：
 
 ```
-http://127.0.0.1:12345/sse
+http://127.0.0.1:12346
 ```
 
 即可在线调试所有 Tool、Resource 和 Prompt。

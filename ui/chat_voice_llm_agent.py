@@ -57,12 +57,12 @@ from prompts.prompt_templates import (
 # ═══════════════════════════════════════════════════════════
 #  【新增】MCP Server 配置
 # ═══════════════════════════════════════════════════════════
-MCP_SERVER_URL = "http://127.0.0.1:12345"
+MCP_SERVER_URL = "http://127.0.0.1:12346"
 """MCP Server 的 SSE 端点地址（默认由 config.yaml 的 transport 配置决定）"""
 
 
 # ═══════════════════════════════════════════════════════════
-#  【新增】从 config.yaml 读取密钥 & 模型配置
+#  【新增】从 config.yaml / SOPS(env.yaml) 读取密钥 & 模型配置
 # ═══════════════════════════════════════════════════════════
 def _load_config():
     """从 config.yaml 读取配置。"""
@@ -73,9 +73,30 @@ def _load_config():
             return yaml.safe_load(f) or {}
     return {}
 
+
+def _load_secrets():
+    """
+    加载密钥：优先从 SOPS (env.yaml) 解密获取，降级到 config.yaml 中的 secrets 字段。
+    """
+    # 1. 优先尝试 SOPS 解密
+    try:
+        from modules.YA_Secrets.secrets_parser import load_secrets
+        sops_secrets = load_secrets(
+            path=os.path.join(PROJECT_ROOT, "env.yaml"),
+            sops_config=os.path.join(PROJECT_ROOT, ".sops.yaml"),
+        )
+        if sops_secrets:
+            return sops_secrets
+    except Exception:
+        pass
+
+    # 2. 降级：从 config.yaml 的 secrets 字段读取（本地开发调试）
+    return _CFG.get("secrets", {}) or {}
+
+
 _CFG = _load_config()
-_secrets = _CFG.get("secrets", {})
 _llm_cfg = _CFG.get("llm", {})
+_secrets = _load_secrets()
 
 DASHSCOPE_API_KEY = _secrets.get("dashscope_api_key", "")
 QWEN_MODEL_NAME = _llm_cfg.get("model_name", "qwen-turbo")
